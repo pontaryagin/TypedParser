@@ -4,18 +4,30 @@ using namespace std::string_literals;
 using String = std::string;
 
 namespace tp{
-template<typename T, typename Sep>
+// template<typename T>
+// RetType
+// {
+// 	using type = T;
+// }
+
+// template<typename T, char sep>
+// RetType<Vec<T, sep>>
+// {
+// 	using type = 
+// }
+
+template<typename T, char Sep>
+requires	requires(T){ T::ret_type; }
 struct Vec
 {
-	using rettype = std::vector<T>;
-	static rettype parse(String s)
-	{
-
-	}
-
+    using ret_type = std::vector<T::ret_type>;
 };
 
-
+// template<typename T, typename Sep>
+// struct Pair
+// {
+// 	using rettype = std::pair<T>;
+// };
 
 template<char separator>
 struct Sep
@@ -24,11 +36,11 @@ struct Sep
 };
 
 template<typename T>
-struct parser{};
+struct Parser{};
 
 
 template<>
-struct parser<double>
+struct Parser<double>
 {
 	static double parse(char* start, char* end) 
 	{
@@ -46,7 +58,7 @@ struct parser<double>
 };
 
 template<>
-struct parser<int>
+struct Parser<int>
 {
 	static int parse(char* start, char* end)
 	{
@@ -63,13 +75,14 @@ struct parser<int>
 	}
 };
 
-template<template<typename...> typename Vec, typename T, typename Sep>
-struct parser<Vec<T, Sep>>
+template<typename T, char Sep>
+struct Parser<Vec<T, Sep>>
 {
 	using _wholeType = Vec<T, Sep>;
 	static typename _wholeType::rettype parse(char* start, char* end)
 	{
-		constexpr auto separator = Sep::value;
+		// constexpr auto separator = Sep::value;
+		constexpr auto separator = Sep;
 		size_t cnt = 0;
 		for (auto it = start; it < end; ++it)
 		{
@@ -85,7 +98,7 @@ struct parser<Vec<T, Sep>>
 		{
 			if (*it == separator || it == end)
 			{
-				auto val = parser<T>::parse(curr_start, it);
+				auto val = Parser<T>::parse(curr_start, it);
 				parsed.push_back(val);
 				curr_start = it + 1;
 			}
@@ -93,15 +106,46 @@ struct parser<Vec<T, Sep>>
 		return parsed;
 	}
 };
+
+// template<typename T, typename Sep>
+// struct Parser<Pair<T, Sep>>
+// {
+// 	using _wholeType = Pair<T, Sep>;
+// 	static typename _wholeType::rettype parse(char* start, char* end)
+// 	{
+// 		constexpr auto separator = Sep::value;
+
+// 		typename _wholeType::rettype parsed;
+// 		parsed.reserve(cnt + 1);
+// 		auto curr_start = start;
+// 		for (auto it = start; it <= end; ++it)
+// 		{
+// 			if (*it == separator || it == end)
+// 			{
+// 				auto val = Parser<T>::parse(curr_start, it);
+// 				parsed.push_back(val);
+// 				curr_start = it + 1;
+// 			}
+// 		}
+// 		return parsed;
+// 	}
+// };
+
+#include <memory>
+template<typename T>
+auto parse(const String& str)
+{
+	auto s = std::make_unique<char[]>(str.size()+1);
+	str.copy(s.get(), str.size());
+	return Parser<T>::parse(s.get(), s.get() + str.size());
+}
 }
 
 int main() {
-	String s = "12";
-	auto d = tp::parser<int>::parse(s.data(), s.data() + 2);
-	std::cout << d << std::endl;
+	String s = "12:23;124:34";
+	auto d = tp::parse<tp::Vec<tp::Vec<int,':'>, ':'>>(s);
+	// std::cout << d << std::endl;
 	String t = "12;2;3";
-	auto vec = tp::parser<tp::Vec<int, tp::Sep<';'>>>::parse(t.data(), t.data() + t.size());
-  auto vec2 = tp::parser<tp::Sep<
-
+	
 	return 0;
 }
