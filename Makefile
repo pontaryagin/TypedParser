@@ -1,3 +1,3 @@
 
 build:
-	g++ main.cpp --std=c++20
+	g++ main.cpp --std=c++2a -o main.out -g3 -Wall -Wextra
