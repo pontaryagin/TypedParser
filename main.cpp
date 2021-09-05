@@ -159,11 +159,40 @@ auto parse(const char* str)
 
 }
 
+template <unsigned N>
+struct String_ {
+  char data[N];
+};
+
+template<unsigned ...Len>
+constexpr auto cat(const char (&...strings)[Len]) {
+  constexpr unsigned N = (... + Len) - sizeof...(Len);
+  String_<N + 1> result = {};
+  result.data[N] = '\0';
+
+  char* dst = result.data;
+  for (const char* src : {strings...}) {
+    for (; *src != '\0'; src++, dst++) {
+      *dst = *src;
+    }
+  }
+  return result;
+}
+
+using namespace std;
 int main() {
 
-	String s = "12:23;124:34";
+	auto s = "12:23;124:34";
 	using T= tp::Vec<tp::Pair<String, int,':'>, ';'>;
 	auto d = tp::parse<T>(s);
+
+	constexpr char test[] = "TEST2";
+	constexpr char test2[] = "TEST";
+
+	constexpr auto test3 = cat(test, test2);
+	static_assert(std::char_traits<char>::compare(test3.data, "TEST2TEST", sizeof(test3.data)) == 0);
+
+	cout << test3.data << endl;
 
 	return 0;
 }
