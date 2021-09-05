@@ -162,11 +162,15 @@ auto parse(const char* str)
 template <unsigned N>
 struct String_ {
   char data[N];
+	constexpr String_() = default;
+	constexpr String_(const char (&val)[N]) {
+		std::copy_n(val, N, data);
+	}
 };
 
-template<unsigned ...Len>
+template<std::size_t ...Len>
 constexpr auto cat(const char (&...strings)[Len]) {
-  constexpr unsigned N = (... + Len) - sizeof...(Len);
+  constexpr std::size_t N = (... + Len) - sizeof...(Len);
   String_<N + 1> result = {};
   result.data[N] = '\0';
 
@@ -178,6 +182,28 @@ constexpr auto cat(const char (&...strings)[Len]) {
   }
   return result;
 }
+
+// template<String_ str>
+template <String_ chars>
+struct TypeTable
+{
+};
+
+// #define DEFINE_TYPE(Name, Type) template<> struct TypeTable<std::char_traits<char>::length(val), val>{uaing type = Type;};
+
+template<> 
+struct 
+TypeTable<"AAA">
+{
+	using type = int;
+};
+
+template<> 
+struct 
+TypeTable<"BBB">
+{
+	using type = float;
+};
 
 using namespace std;
 int main() {
@@ -193,6 +219,9 @@ int main() {
 	static_assert(std::char_traits<char>::compare(test3.data, "TEST2TEST", sizeof(test3.data)) == 0);
 
 	cout << test3.data << endl;
+	cout << typeid(typename TypeTable<"AAA">::type).name() << endl;
+	cout << typeid(typename TypeTable<"BBB">::type).name() << endl;
+	// cout << typeid(typename TypeTable<"CCC">::type).name() << endl;
 
 	return 0;
 }
