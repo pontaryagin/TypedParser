@@ -189,7 +189,6 @@ struct TypeTable
 {
 };
 
-// #define DEFINE_TYPE(Name, Type) template<> struct TypeTable<std::char_traits<char>::length(val), val>{uaing type = Type;};
 
 template<> 
 struct 
@@ -216,12 +215,12 @@ int main() {
 	constexpr char test2[] = "TEST";
 
 	constexpr auto test3 = cat(test, test2);
-	static_assert(std::char_traits<char>::compare(test3.data, "TEST2TEST", sizeof(test3.data)) == 0);
-
+	static_assert(std::equal(begin(test3.data), end(test3.data), "TEST2TEST"));
+	constexpr char nameA[] = "AAA";
 	cout << test3.data << endl;
 	cout << typeid(typename TypeTable<"AAA">::type).name() << endl;
+	cout << typeid(typename TypeTable<nameA>::type).name() << endl;
 	cout << typeid(typename TypeTable<"BBB">::type).name() << endl;
 	// cout << typeid(typename TypeTable<"CCC">::type).name() << endl;
-
 	return 0;
-}
+}	
