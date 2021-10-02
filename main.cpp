@@ -6,43 +6,29 @@ using String = std::string;
 
 namespace tp{
 
+template<typename T, typename = void>
+struct RetTypeImpl{
+	using type = T; 
+};
+
 template<typename T>
-concept HasRetType = requires(T){ typename T::ret_type; };
+struct RetTypeImpl<T, std::void_t<typename T::ret_type>>{
+	using type = typename T::ret_type; 
+};
+
+template<typename T>
+using RetType = typename RetTypeImpl<T>::type;
 
 template<typename T, char Sep>
 struct Vec
 {
-	using ret_type = std::vector<T>;
-};
-
-template<HasRetType T, char Sep>
-struct Vec<T, Sep>
-{
-	using ret_type = std::vector<typename T::ret_type>;
+	using ret_type = std::vector<RetType<T>>;
 };
 
 template<typename S, typename T, char sep>
 struct Pair
 {
-	using ret_type = std::pair<S, T>;
-};
-
-template<typename S, HasRetType T, char sep>
-struct Pair<S, T, sep>
-{
-	using ret_type = std::pair<S, typename T::ret_type>;
-};
-
-template<HasRetType S, typename T, char sep>
-struct Pair<S, T, sep>
-{
-	using ret_type = std::pair<typename S::ret_type, T>;
-};
-
-template<HasRetType S, HasRetType T, char sep>
-struct Pair<S, T, sep>
-{
-	using ret_type = std::pair<typename S::ret_type, typename T::ret_type>;
+	using ret_type = std::pair<RetType<S>, RetType<T>>;
 };
 
 template<typename T>
