@@ -2,7 +2,7 @@
 #include <string>
 using namespace std::string_literals;
 using String = std::string;
-#include <charconv>
+#include <cassert>
 
 namespace tp{
 
@@ -145,50 +145,50 @@ auto parse(const char* str)
 
 }
 
-template <unsigned N>
-struct String_ {
-  char data[N];
-	constexpr String_() = default;
-	constexpr String_(const char (&val)[N]) {
-		std::copy_n(val, N, data);
-	}
-};
+// template <unsigned N>
+// struct String_ {
+//   char data[N];
+// 	constexpr String_() = default;
+// 	constexpr String_(const char (&val)[N]) {
+// 		std::copy_n(val, N, data);
+// 	}
+// };
 
-template<std::size_t ...Len>
-constexpr auto cat(const char (&...strings)[Len]) {
-  constexpr std::size_t N = (... + Len) - sizeof...(Len);
-  String_<N + 1> result = {};
-  result.data[N] = '\0';
+// template<std::size_t ...Len>
+// constexpr auto cat(const char (&...strings)[Len]) {
+//   constexpr std::size_t N = (... + Len) - sizeof...(Len);
+//   String_<N + 1> result = {};
+//   result.data[N] = '\0';
 
-  char* dst = result.data;
-  for (const char* src : {strings...}) {
-    for (; *src != '\0'; src++, dst++) {
-      *dst = *src;
-    }
-  }
-  return result;
-}
+//   char* dst = result.data;
+//   for (const char* src : {strings...}) {
+//     for (; *src != '\0'; src++, dst++) {
+//       *dst = *src;
+//     }
+//   }
+//   return result;
+// }
 
 // template<String_ str>
-template <String_ chars>
-struct TypeTable
-{
-};
+// template <String_ chars>
+// struct TypeTable
+// {
+// };
 
 
-template<> 
-struct 
-TypeTable<"AAA">
-{
-	using type = int;
-};
+// template<> 
+// struct 
+// TypeTable<"AAA">
+// {
+// 	using type = int;
+// };
 
-template<> 
-struct 
-TypeTable<"BBB">
-{
-	using type = float;
-};
+// template<> 
+// struct 
+// TypeTable<"BBB">
+// {
+// 	using type = float;
+// };
 
 using namespace std;
 int main() {
@@ -196,17 +196,8 @@ int main() {
 	auto s = "12:23;124:34";
 	using T= tp::Vec<tp::Pair<String, int,':'>, ';'>;
 	auto d = tp::parse<T>(s);
+	assert((d[0] == std::pair<String, int>{"12", 23}));
+	assert((d[1] == std::pair<String, int>{"124", 34}));
 
-	constexpr char test[] = "TEST2";
-	constexpr char test2[] = "TEST";
-
-	constexpr auto test3 = cat(test, test2);
-	static_assert(std::equal(begin(test3.data), end(test3.data), "TEST2TEST"));
-	constexpr char nameA[] = "AAA";
-	cout << test3.data << endl;
-	cout << typeid(typename TypeTable<"AAA">::type).name() << endl;
-	cout << typeid(typename TypeTable<nameA>::type).name() << endl;
-	cout << typeid(typename TypeTable<"BBB">::type).name() << endl;
-	// cout << typeid(typename TypeTable<"CCC">::type).name() << endl;
 	return 0;
 }	
