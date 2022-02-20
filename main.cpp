@@ -4,6 +4,13 @@ using namespace std::string_literals;
 using String = std::string;
 #include <charconv>
 
+#define USE_BOOST
+
+#ifdef USE_BOOST
+#include <boost/lexical_cast.hpp>
+#endif
+
+
 namespace tp{
 
 template<typename T, typename = void>
@@ -39,6 +46,9 @@ struct Parser<double>
 {
 	static double parse(char* start, char* end) 
 	{
+#ifdef USE_BOOST
+		auto parsed = boost::lexical_cast<double>(start, end-start);
+#else
 		auto last_char = *end;
 		*end = '\0';
 		char* check;
@@ -49,6 +59,7 @@ struct Parser<double>
 			throw std::invalid_argument("Invalid format for double : "s + start);
 		}
 		*end = last_char;
+#endif
 		return parsed;
 	}
 };
@@ -58,6 +69,9 @@ struct Parser<int>
 {
 	static int parse(char* start, char* end)
 	{
+#ifdef USE_BOOST
+		auto parsed = boost::lexical_cast<int>(start, end-start);
+#else
 		auto last_char = *end;
 		*end = '\0';
 		char* check;
@@ -68,6 +82,7 @@ struct Parser<int>
 			throw std::invalid_argument("Invalid format for double : "s + start);
 		}
 		*end = last_char;
+#endif
 		return parsed;
 	}
 };
@@ -77,10 +92,14 @@ struct Parser<String>
 {
 	static String parse(char* start, char* end)
 	{
+#ifdef USE_BOOST
+		auto parsed = boost::lexical_cast<std::string>(start, end-start);
+#else
 		auto last_char = *end;
 		*end = '\0';
 		auto parsed = String(start);
 		*end = last_char;
+#endif
 		return parsed;
 	}
 };
@@ -192,11 +211,18 @@ TypeTable<"BBB">
 
 using namespace std;
 int main() {
-
-	auto s = "12:23;124:34";
-	using T= tp::Vec<tp::Pair<String, int,':'>, ';'>;
-	auto d = tp::parse<T>(s);
-
+	{
+		auto s = "12:23;124:34";
+		using T= tp::Vec<tp::Pair<String, int,':'>, ';'>;
+		auto d = tp::parse<T>(s);
+		cout << s << "==" << d[0].first << ":" << d[0].second << ";" << d[1].first << ":" << d[1].second << endl;
+	}
+	{
+		auto s = "abc:1;4.23";
+		using T= tp::Pair<string, tp::Pair<int, double, ';'>, ':'>;
+		auto d = tp::parse<T>(s);
+		cout << s << "==" << d.first << ":" << d.second.first << ":" << d.second.second << endl;
+	}
 	constexpr char test[] = "TEST2";
 	constexpr char test2[] = "TEST";
 
